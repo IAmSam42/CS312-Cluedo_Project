@@ -1,9 +1,21 @@
 %%  Cluedo Project  %%
 
 %nextQuestion(T,Q) is true if T is the type of the answer R, where R is the next question the program reccomends the player asks.
+%   -If there are no possble answers, the type is 'error'
+%   -If there is exactly one possible answer, the type is 'answer'
+%   -If there are multiple answers, the type is 'question'
 nextQuestion(error, [])     :-  possibleAnswers([]).
 nextQuestion(answer, Q)     :-  possibleAnswers([Q|[]]).
-nextQuestion(question, Q)   :-  possibleAnswers([Q, _ | _]).
+nextQuestion(question, Q)   :-  possibleAnswers([A, B | T]),
+                                chooseQuestion([A, B | T], Q).
+
+%chooseQuestion(L, Q) return true if Q is an answer listed in L, where the Room of Q is the current room.
+%   -If there are no possble questions to ask in the current room, R is none_in_current_room.
+chooseQuestion([], none_in_current_room).
+chooseQuestion([(C, W, R)|_], (C, W, R)) :- current_room(R).
+chooseQuestion([(_, _, R)|T], Q) :- \+ current_room(R),
+                                    chooseQuestion(T, Q).
+
 %possibleAnswers(A) is true if A is a list of all the combinations of cards that could be the answer, in the order (Character, Weapon, Room)
 possibleAnswers(A) :- characters(C),
                       weapons(W),
@@ -39,6 +51,8 @@ suspects([H|T], R) :-  prop(_, has, H),
 
 % The player represented by the program.
 me(p1).
+% The current room.
+current_room(kitchen).
 
 % List of all the characters
 characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacock, professor_plum]).
