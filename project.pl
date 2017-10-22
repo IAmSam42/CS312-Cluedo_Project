@@ -1,5 +1,27 @@
 %%  Cluedo Project  %%
 
+%Work out all the possible answers left.
+possibleAnswers(A) :- characters(C),
+                      weapons(W),
+                      rooms(R),
+                      suspects(C, CS),
+                      suspects(W, WS),
+                      suspects(R, RS),
+                      combine(WS, RS, A1),
+                      combine(CS, A1, A).
+
+combine([], _, []).
+combine([H1|T1], L2, R) :- formPairs(H1, L2, C),
+                           combine(T1, L2, R1),
+                           concat(C, R1, R).
+
+concat([],X,X).
+concat([X|Y], Z, [X|W]) :- concat(Y, Z, W).
+
+%formPairs(E, L, R) returns true of R is the list L where every elements is in a pair with X (X,_)
+formPairs(_, [], []).
+formPairs(X, [H|T], [(X, H)|R]) :- formPairs(X, T, R).
+
 % suspects(L, R) Where R is all of the possible suspected things in list L.
 suspects([], []).
 suspects([H|T], [H|R]) :-  \+ prop(_, has, H),
