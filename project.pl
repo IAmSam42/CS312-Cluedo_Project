@@ -40,13 +40,28 @@ concat([H|T], B, [H|R]) :- concat(T, B, R).
 formPairs(_, [], []).
 formPairs(E, [H|T], [(E, H)|R]) :- formPairs(E, T, R).
 
-% suspects(L, R) Is true if R is all of the possible suspects in list L.
+%suspects(L, R) Is true if R is all of the possible suspects in list L.
 suspects([], []).
 suspects([H|T], [H|R]) :-  \+ prop(_, has, H),
-                          suspects(T, R).
+                           suspects(T, R).
 suspects([H|T], R) :-  prop(_, has, H),
-                          suspects(T, R).
+                       suspects(T, R).
+                          
+%add(P, C) returns true if card C exists, and if the prop(P, has, C) is added to the Knowledge Base.
+add(P, C) :- characters(L),
+             contains(C, L),
+             assertz(prop(P, has, C)).
+add(P, C) :- weapons(L),
+             contains(C, L),
+             assertz(prop(P, has, C)).
+add(P, C) :- rooms(L),
+             contains(C, L),
+             assertz(prop(P, has, C)).
 
+
+%contains(E, L) returns true if E is an element of L.
+contains(E, [E|_]).
+contains(E, [_|T]) :- contains(E, T).
 %% Knowledge Base %%
 
 % The player represented by the program.
