@@ -1,6 +1,10 @@
 %%  Cluedo Project  %%
 
-%Work out all the possible answers left.
+%nextQuestion(T,Q) is true if T is the type of the answer R, where R is the next question the program reccomends the player asks.
+nextQuestion(error, [])     :-  possibleAnswers([]).
+nextQuestion(answer, Q)     :-  possibleAnswers([Q|[]]).
+nextQuestion(question, Q)   :-  possibleAnswers([Q, _ | _]).
+%possibleAnswers(A) is true if A is a list of all the combinations of cards that could be the answer, in the order (Character, Weapon, Room)
 possibleAnswers(A) :- characters(C),
                       weapons(W),
                       rooms(R),
@@ -10,19 +14,21 @@ possibleAnswers(A) :- characters(C),
                       combine(WS, RS, A1),
                       combine(CS, A1, A).
 
+%combine(L1, L2, R) is true if R is a list of all the pairs of L1 and L2 arranged as (L1 element, L2 element).
 combine([], _, []).
 combine([H1|T1], L2, R) :- formPairs(H1, L2, C),
                            combine(T1, L2, R1),
                            concat(C, R1, R).
 
-concat([],X,X).
-concat([X|Y], Z, [X|W]) :- concat(Y, Z, W).
+%concat(A, B, R) is true if R is list A concatenated with list B
+concat([],R,R).
+concat([H|T], B, [H|R]) :- concat(T, B, R).
 
-%formPairs(E, L, R) returns true of R is the list L where every elements is in a pair with X (X,_)
+%formPairs(E, L, R) returns true if R is the list L where every element of R is a pair (E, X), where X is an element of L
 formPairs(_, [], []).
-formPairs(X, [H|T], [(X, H)|R]) :- formPairs(X, T, R).
+formPairs(E, [H|T], [(E, H)|R]) :- formPairs(E, T, R).
 
-% suspects(L, R) Where R is all of the possible suspected things in list L.
+% suspects(L, R) Is true if R is all of the possible suspects in list L.
 suspects([], []).
 suspects([H|T], [H|R]) :-  \+ prop(_, has, H),
                           suspects(T, R).
