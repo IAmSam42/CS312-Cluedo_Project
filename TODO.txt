@@ -1,0 +1,26 @@
+The current code should support all of the things listed in this TODO list, I don't think we need to add any more functions apart from all the natural language stuff.
+
+Add natural language interface to the program, it should do the following:
+
+Figure out a naming scheme. Do we allow the user to refer to people by name, or should we force them to use titles like Player 1, Player 2?
+
+
+Allow the user to add information to the Knowledge Base, in general
+    "<name> has <card>" should call assertz(prop(<name>, has, <card>))
+    
+However we also need to work out a consitant naming scheme, I currently am using 'p1', 'p2' but this could be anything. Some example of what should happen below:
+    "I have Miss Scarlet" should call assertz(prop(<player>, has, miss_scarlet)).
+    "I have the Ballroom" should call assertz(prop(<player>, has ballroom)).
+    "John has the lead pipe" should call assertz(prop(<johns player name>, has, lead_pipe)).
+    
+
+Allow the user to query the Knowledge base for individual cards. A call of "Who has <card>" should look up "prop(P, has, <card)" and return P. It should also tell the player if that information does not exist.
+
+
+Allow the player to get a list of suspects. I'm unsure of what the expected syntax of this should be, but maybe something like "What are the suspected rooms?" should return the result of 'rooms(R), suspects(R, A)'. 
+
+
+Allow the player to set what room they're currently in. "I'm on the kitchen" should call 'assertz(currently_in(kitchen))'. We don't care about the rooms other players are in, so we can ignore that.
+
+
+Allow the player to ask what their next move should be. When they ask what they should do next, nextQuestion(T, R) should be called. If T returns as 'error' then somethings gone wrong and there are no possible suspects left. If T is 'answer' then the knowledge base has enough evidence to work out the answer, and no more questions are needed. If T is 'question' then R is a triple of (Character, Weapon, Room) which represents that the player should ask if Character, Weapon, Room is guilty. R is returned as 'none_in_current_room' then it means that we know the current room is not the correct answer, and the player should try to move to a new room.
