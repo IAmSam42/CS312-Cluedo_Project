@@ -6,12 +6,12 @@ Figure out a naming scheme. Do we allow the user to refer to people by name, or 
 
 
 Allow the user to add information to the Knowledge Base, in general
-    "<name> has <card>" should call assertz(prop(<name>, has, <card>))
+    "<name> has <card>" should call add(<name>, <card>))
     
 However we also need to work out a consitant naming scheme, I currently am using 'p1', 'p2' but this could be anything. Some example of what should happen below:
-    "I have Miss Scarlet" should call assertz(prop(<player>, has, miss_scarlet)).
-    "I have the Ballroom" should call assertz(prop(<player>, has ballroom)).
-    "John has the lead pipe" should call assertz(prop(<johns player name>, has, lead_pipe)).
+    "I have Miss Scarlet" should call add(<player>, miss_scarlet).
+    "I have the Ballroom" should call add(<player> ballroom).
+    "John has the lead pipe" should call add(<johns player name>, lead_pipe).
     
 
 Allow the user to query the Knowledge base for individual cards. A call of "Who has <card>" should look up "prop(P, has, <card)" and return P. It should also tell the player if that information does not exist.
