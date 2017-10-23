@@ -142,7 +142,7 @@ characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacoc
 weapons([candlestick, dagger, lead_pipe, revolver, rope, spanner]).
 
 % List of all the rooms
-rooms([kitchen, ballroom, conservatory, dinning_room, billiard_room, library, lounge, hall, study]).
+rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lounge, hall, study]).
 
 %prop(player, has, card) means that 'player' has 'card' in their hand
 prop(p1, has, lead_pipe).
