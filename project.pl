@@ -2,6 +2,13 @@
 
 %%Natural Language Interface
 
+%A statment may just be a noun_phrase.
+statement(T0,T1,Ind,C0,C1) :-
+    noun_phrase(T0,T1,Ind,C0,C1).
+%A who quesion is 'who' followed by a mp
+statement([who | T0],T1,Ind,C0,C1) :-
+    mp(T0,T1,Ind,C0,C1).
+
 %noun_phrase(T0, T2, Ind, C0, C2) is true if:
 %   the difference list between T0 and T2 is a noun phrase,
 %   Ind is the individual reffered to by the noun phrase.
@@ -16,29 +23,29 @@ noun_phrase(T0, T3, Ind, C0, C3) :-
 det([the | T],T,_,C,C).
 det(T,T,_,C,C).
 
-%A modofying phrase is either nothing or a relation between two objects followed by a noun phrase that describes the second object.
+%A modifying phrase is either nothing or a relation between two objects followed by a noun phrase that describes the second object.
 mp(T,T,_,C,C).
-%mp(T0,T2, O1, C0, C2) :-
-%    reln(T0,T1,O1,O2,C0,C1),
-%    noun_phrase(T1,T2,O2,C1,C2).
+mp(T0,T2,O1,C0,C2) :-
+    reln(T0,T1,O1,O2,C0,C1),
+    noun_phrase(T1,T2,O2,C1,C2).
 
+reln([has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
+reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
+reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
 
-%A question can have multiple starts, which can be ignored.
-question([who,has | T0],T1,Ind,C0,C1) :-
-    noun_phrase(T0,T1,Ind,C0,C1).
 
 %ask(Q, A) is true if A is the answer to the question A.
 %Q is given as a string, which is then converted to a list of lower case atoms.
 ask(Q,A) :-
     string_lower(Q, QLowerCase),
     tokenize_atom(QLowerCase, QList),
-    question(QList,[],A,C,[]),
+    statement(QList,[],A,C,[]),
     prove_all(C).
 %A question may also end in a question mark.
 ask(Q,A) :-
     string_lower(Q, QLowerCase),
     tokenize_atom(QLowerCase, QList),
-    question(QList,[?],A,C,[]),
+    statement(QList,[?],A,C,[]),
     prove_all(C).
 
 % prove_all(L) proves all elements of L against the database
@@ -51,10 +58,10 @@ prove_all([H|T]) :-
 
 %nextQuestion(T,Q) is true if T is the type of the answer R, where R is the next question the program reccomends the player asks.
 %   -If there are no possble answers, the type is 'error'
-%   -If there is exactly one possible answer, the type is 'answer'
+%   -If there is exactly one possible answer, the type is 'solution'
 %   -If there are multiple answers, the type is 'question'
 nextQuestion(error, [])     :-  possibleAnswers([]).
-nextQuestion(answer, Q)     :-  possibleAnswers([Q|[]]).
+nextQuestion(solution, Q)     :-  possibleAnswers([Q|[]]).
 nextQuestion(question, Q)   :-  possibleAnswers([A, B | T]),
                                 chooseQuestion([A, B | T], Q).
 
@@ -95,10 +102,11 @@ suspects([H|T], [H|R]) :-  \+ prop(_, has, H),
                            suspects(T, R).
 suspects([H|T], R) :-  prop(_, has, H),
                        suspects(T, R).
-                          
-%add(P, C) returns true if card C exists, and if the prop(P, has, C) is added to the Knowledge Base.
+
+%add(P, C) returns true if card C exists, player P exists, C does not already belong to someone, and if the prop(P, has, C) is added to the Knowledge Base.
 add(P, C) :- isCard(C),
              isPlayer(P),
+             \+ prop(_,has,C),
              assertz(prop(P, has, C)).
 
 %exists(C) returns true if the card C exists.
@@ -122,10 +130,10 @@ contains(E, [_|T]) :- contains(E, T).
 % The player represented by the program.
 me(p1).
 % The current room.
-current_room(kitchen).
+current_room(library).
 
 % List of all the players.
-players([p1, p2, p3, p4]).
+players([p1, p2, bob, p4]).
 
 % List of all the characters
 characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacock, professor_plum]).
@@ -144,16 +152,16 @@ prop(p4, has, colonel_mustard).
 
 %%Dictionary
 
-%A noun is the name of a card, if the card exists.
-noun([Card | T],T,Ind,[prop(Ind,has,Card)|C],C) :- isCard(Card).
+%A card name is the name of a card, if it exists.
+noun([Card | T],T,Card,C,C) :- isCard(Card).
 
 %Some cards are formed of two words seperated by a '_'. e.g. mrs_scarlett.
-noun([Card1, Card2 | T],T,Ind,[prop(Ind,has,Card)|C],C) :-
+noun([Card1, Card2 | T],T,Card,C,C) :-
     atom_concat(Card1, '_', R1),
     atom_concat(R1, Card2, Card),
     isCard(Card).
 
 %A noun is a players name.
 noun([Name | T],T,Name,C,C) :- isPlayer(Name).
-    
-
+%'I' is a noun, it is the value of me.
+noun([i | T],T,Name,C,C) :- me(Name).
