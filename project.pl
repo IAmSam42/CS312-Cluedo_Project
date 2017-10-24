@@ -2,26 +2,38 @@
 
 %%Natural Language Interface
 
-%A statment may just be a noun_phrase.
-statement(T0,T1,Ind,C0,C1) :-
-    noun_phrase(T0,T1,Ind,C0,C1).
+
 %A who has question needs to be identified as a query, so that it does not trigger an assignment.
 statement([who, has | T0],T1,Ind,C0,C1) :-
     mp([query_has|T0],T1,Ind,C0,C1).
+%Ignore any 'what is'
+statement([what, is | T0],T1,Ind,C0,C1) :-
+    noun_phrase(T0,T1,Ind,C0,C1).
+%A statment may just be a noun_phrase.
+statement(T0,T1,Ind,C0,C1) :-
+    noun_phrase(T0,T1,Ind,C0,C1).
 
 %noun_phrase(T0, T2, Ind, C0, C2) is true if:
 %   the difference list between T0 and T2 is a noun phrase,
 %   Ind is the individual reffered to by the noun phrase.
 %   The difference list between C0 and C2 are the constrains imposed by the noun phrase.
-%In the language of Cluedo, a noun phrase is a determiner followed by a noun, followed by modifying phrase.
-noun_phrase(T0, T3, Ind, C0, C3) :-
-    det(T0, T1, Ind, C0, C1),
-    noun(T1, T2, Ind, C1, C2),
-    mp(T2, T3, Ind, C2, C3).
+%A noun phrase is a determiner followed by adjectives, followed by a noun, followed by modifying phrase.
+noun_phrase(T0, T4, Ind, C0, C4) :-
+    det(T0, T1, Ind, C0, C1),exi
+    adjectives(T1, T2, Ind, C1, C2),
+    noun(T2, T3, Ind, C2, C3),
+    mp(T3, T4, Ind, C3, C4).
 
 %Determiners can be ignored.
 det([the | T],T,_,C,C).
+det([my | T],T,_,C,C). %Possesive determiners add no aditional information in this context.
 det(T,T,_,C,C).
+
+%Adjectives is a list of adjectives, possible empty.
+adjectives(T,T,_,C,C).
+adjectives(T0,T2,Ind,C0,C2) :-
+    adj(T0,T1,Ind,C0,C1),
+    adjectives(T1,T2,Ind,C1,C2).
 
 %A modifying phrase is either nothing or a relation between two objects followed by a noun phrase that describes the second object.
 mp(T,T,_,C,C).
@@ -152,6 +164,8 @@ prop(p4, has, colonel_mustard).
 
 %%Dictionary
 
+%NOUNS
+
 %A card name is the name of a card, if it exists.
 noun([Card | T],T,Card,C,C) :- isCard(Card).
 
@@ -165,3 +179,14 @@ noun([Card1, Card2 | T],T,Card,C,C) :-
 noun([Name | T],T,Name,C,C) :- isPlayer(Name).
 %'I' is a noun, it is the value of me.
 noun([i | T],T,Name,C,C) :- me(Name).
+
+%'move' or 'question' both refer to the result of nextQuestion.
+noun([move | T],T,(Type,Move),C,C) :- 
+    nextQuestion(Type,Move).
+noun([question | T],T,(Type,Move),C,C) :- 
+    nextQuestion(Type,Move).
+
+%ADJECTIVES
+
+%'next' can be ignored.
+adj([next | T],T,_,C,C).
