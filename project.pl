@@ -7,14 +7,14 @@ statement([who, has | T0],T1,Ind,C0,C1) :-
     mp([query_has|T0],T1,Ind,C0,C1).
 statement([what, is | T0],T1,Ind,C0,C1) :- %Ignore any 'what is'
     noun_phrase(T0,T1,Ind,C0,C1).
+statement([what, are | T0],T1,Ind,C0,C1) :- %Ignore any 'what are'
+    noun_phrase(T0,T1,Ind,C0,C1).
 statement([what | T0],T1,Ind,C0,C1) :-%Ignore any 'what'
     noun_phrase(T0,T1,Ind,C0,C1).
 statement([which | T0],T1,Ind,C0,C1) :- %Ignore any 'which'
     noun_phrase(T0,T1,Ind,C0,C1).
 statement([which, is | T0],T1,Ind,C0,C1) :- %Ignore any 'which is'
     noun_phrase(T0,T1,Ind,C0,C1).
-statement([what,are,the | T0],T1,Ind,C0,C1) :-
-    mp(T0, T1, Ind, C0, C1).
 %A statment may just be a noun_phrase.
 statement(T0,T1,Ind,C0,C1) :-
     noun_phrase(T0,T1,Ind,C0,C1).
@@ -53,11 +53,10 @@ mp(T0,T2,O1,C0,C2) :-    %does/do have relationships
 reln([query_has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
 reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
 reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
-reln([suspected,rooms|T0],T0,O1,O2,[rooms(O2), suspects(O2,A)|C],C).
-reln([suspected,weapons|T0],T0,O1,O2,[weapons(O2), suspects(O2,A)|C],C).
-reln([suspected,characters|T0],T0,O1,O2,[characters(O2), suspects(O2,A)|C],C).
 reln([does|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
 reln([do|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
+
+%reln([suspected,rooms|T0],T0,O1,O2,[rooms(O2), suspects(O2,A)|C],C)
 
 %ask(Q, A) is true if A is the answer to the question A.
 %Q is given as a string, which is then converted to a list of lower case atoms.
@@ -121,6 +120,9 @@ concat([H|T], B, [H|R]) :- concat(T, B, R).
 formPairs(_, [], []).
 formPairs(E, [H|T], [(E, H)|R]) :- formPairs(E, T, R).
 
+%suspected(E) is true if E is a suspected character, weapon or room.
+suspected(E) :- \+ prop(_,has,E).
+
 %suspects(L, R) Is true if R is all of the possible suspects in list L.
 suspects([], []).
 suspects([H|T], [H|R]) :-  \+ prop(_, has, H),
@@ -183,26 +185,30 @@ prop(p4, has, colonel_mustard).
 noun([i | T],T,Name,C,C) :- me(Name).
 
 %'move' or 'question' both refer to the result of nextQuestion.
-noun([move | T],T,(Type,Move),C,C) :- 
-    nextQuestion(Type,Move).
-noun([question | T],T,(Type,Move),C,C) :- 
-    nextQuestion(Type,Move).
+noun([move | T],T,(Type,Move),C,C) :- nextQuestion(Type,Move).
+noun([question | T],T,(Type,Move),C,C) :- nextQuestion(Type,Move).
 
-%'card(s)' implies the answer is a card.
-noun([cards | T],T,Ind,[isCard(Ind)|C],C).
-noun([card | T],T,Ind,[isCard(Ind)|C],C).
+%'card(s)' means the individual is a card.
+noun([cards | T],T,Ind,C,C) :- isCard(Ind).
+noun([card | T],T,Ind,C,C) :- isCard(Ind).
 
-%'character(s)' implies the answer is a character.
-noun([characters | T],T,Ind,[characters(Chars), contains(Ind,Chars)|C],C).
-noun([character | T],T,Ind,[characters(Chars), contains(Ind,Chars)|C],C).
+%'character(s)' means the individual is a character.
+noun([characters | T],T,Ind,C,C) :- characters(L),
+                                    contains(Ind,L).
+noun([character | T],T,Ind,C,C) :- characters(L),
+                                    contains(Ind,L).
 
-%'weapon(s)' implies the answer is a weapon.
-noun([weapons | T],T,Ind,[weapons(Weapons), contains(Ind,Weapons)|C],C).
-noun([weapon | T],T,Ind,[weapons(Weapons), contains(Ind,Weapons)|C],C).
+%'weapon(s)' means the individual is a weapon.
+noun([weapons | T],T,Ind,C,C) :- weapons(L), 
+                                 contains(Ind,L).
+noun([weapon | T],T,Ind,C,C) :-  weapons(L), 
+                                 contains(Ind,L).
 
-%'room(s)' implies the answer is a room.
-noun([rooms | T],T,Ind,[rooms(Rooms), contains(Ind,Rooms)|C],C).
-noun([room | T],T,Ind,[rooms(Rooms), contains(Ind,Rooms)|C],C).
+%'room(s)' means the individual is a room.
+noun([rooms | T],T,Ind,C,C) :- rooms(L), 
+                               contains(Ind,L).
+noun([room | T],T,Ind,C,C) :-  rooms(L), 
+                               contains(Ind,L).
 
 %A card name is the name of a card, if it exists.
 noun([Card | T],T,Card,C,C) :- isCard(Card).
@@ -221,3 +227,7 @@ noun([Name | T],T,Name,C,C) :- isPlayer(Name).
 
 %'next' can be ignored.
 adj([next | T],T,_,C,C).
+
+%'suspect(ed)' constrains the individual to be a suspect.
+adj([suspect | T],T,Ind,[suspected(Ind) | C],C).
+adj([suspected | T],T,Ind,[suspected(Ind) | C],C).
