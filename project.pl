@@ -2,7 +2,6 @@
 
 %%Natural Language Interface
 
-
 %A who has question needs to be identified as a query, so that it does not trigger an assignment.
 statement([who, has | T0],T1,Ind,C0,C1) :-
     mp([query_has|T0],T1,Ind,C0,C1).
@@ -14,6 +13,8 @@ statement([which | T0],T1,Ind,C0,C1) :- %Ignore any 'which'
     noun_phrase(T0,T1,Ind,C0,C1).
 statement([which, is | T0],T1,Ind,C0,C1) :- %Ignore any 'which is'
     noun_phrase(T0,T1,Ind,C0,C1).
+statement([what,are,the | T0],T1,Ind,C0,C1) :-
+    mp(T0, T1, Ind, C0, C1).
 %A statment may just be a noun_phrase.
 statement(T0,T1,Ind,C0,C1) :-
     noun_phrase(T0,T1,Ind,C0,C1).
@@ -52,9 +53,11 @@ mp(T0,T2,O1,C0,C2) :-    %does/do have relationships
 reln([query_has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
 reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
 reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
+reln([suspected,rooms|T0],T0,O1,O2,[rooms(O2), suspects(O2,A)|C],C).
+reln([suspected,weapons|T0],T0,O1,O2,[weapons(O2), suspects(O2,A)|C],C).
+reln([suspected,characters|T0],T0,O1,O2,[characters(O2), suspects(O2,A)|C],C).
 reln([does|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
 reln([do|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
-
 
 %ask(Q, A) is true if A is the answer to the question A.
 %Q is given as a string, which is then converted to a list of lower case atoms.
@@ -164,7 +167,7 @@ characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacoc
 weapons([candlestick, dagger, lead_pipe, revolver, rope, spanner]).
 
 % List of all the rooms
-rooms([kitchen, ballroom, conservatory, dinning_room, billiard_room, library, lounge, hall, study]).
+rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lounge, hall, study]).
 
 %prop(player, has, card) means that 'player' has 'card' in their hand
 prop(p1, has, lead_pipe).
