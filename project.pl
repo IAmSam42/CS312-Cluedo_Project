@@ -5,9 +5,9 @@
 %A statment may just be a noun_phrase.
 statement(T0,T1,Ind,C0,C1) :-
     noun_phrase(T0,T1,Ind,C0,C1).
-%A who quesion is 'who' followed by a mp
-statement([who | T0],T1,Ind,C0,C1) :-
-    mp(T0,T1,Ind,C0,C1).
+%A who has question needs to be identified as a query, so that it does not trigger an assignment.
+statement([who, has | T0],T1,Ind,C0,C1) :-
+    mp([query_has|T0],T1,Ind,C0,C1).
 
 %noun_phrase(T0, T2, Ind, C0, C2) is true if:
 %   the difference list between T0 and T2 is a noun phrase,
@@ -29,7 +29,7 @@ mp(T0,T2,O1,C0,C2) :-
     reln(T0,T1,O1,O2,C0,C1),
     noun_phrase(T1,T2,O2,C1,C2).
 
-reln([has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
+reln([query_has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
 reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
 reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
 
