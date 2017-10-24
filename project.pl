@@ -6,8 +6,13 @@
 %A who has question needs to be identified as a query, so that it does not trigger an assignment.
 statement([who, has | T0],T1,Ind,C0,C1) :-
     mp([query_has|T0],T1,Ind,C0,C1).
-%Ignore any 'what is'
-statement([what, is | T0],T1,Ind,C0,C1) :-
+statement([what, is | T0],T1,Ind,C0,C1) :- %Ignore any 'what is'
+    noun_phrase(T0,T1,Ind,C0,C1).
+statement([what | T0],T1,Ind,C0,C1) :-%Ignore any 'what'
+    noun_phrase(T0,T1,Ind,C0,C1).
+statement([which | T0],T1,Ind,C0,C1) :- %Ignore any 'which'
+    noun_phrase(T0,T1,Ind,C0,C1).
+statement([which, is | T0],T1,Ind,C0,C1) :- %Ignore any 'which is'
     noun_phrase(T0,T1,Ind,C0,C1).
 %A statment may just be a noun_phrase.
 statement(T0,T1,Ind,C0,C1) :-
@@ -19,7 +24,7 @@ statement(T0,T1,Ind,C0,C1) :-
 %   The difference list between C0 and C2 are the constrains imposed by the noun phrase.
 %A noun phrase is a determiner followed by adjectives, followed by a noun, followed by modifying phrase.
 noun_phrase(T0, T4, Ind, C0, C4) :-
-    det(T0, T1, Ind, C0, C1),exi
+    det(T0, T1, Ind, C0, C1),
     adjectives(T1, T2, Ind, C1, C2),
     noun(T2, T3, Ind, C2, C3),
     mp(T3, T4, Ind, C3, C4).
@@ -40,10 +45,15 @@ mp(T,T,_,C,C).
 mp(T0,T2,O1,C0,C2) :-
     reln(T0,T1,O1,O2,C0,C1),
     noun_phrase(T1,T2,O2,C1,C2).
+mp(T0,T2,O1,C0,C2) :-    %does/do have relationships
+    reln(T0,T1,O1,O2,C0,C1),
+    noun_phrase(T1,[have|T2],O2,C1,C2).
 
 reln([query_has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
 reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
 reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
+reln([does|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
+reln([do|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
 
 
 %ask(Q, A) is true if A is the answer to the question A.
@@ -121,7 +131,7 @@ add(P, C) :- isCard(C),
              \+ prop(_,has,C),
              assertz(prop(P, has, C)).
 
-%exists(C) returns true if the card C exists.
+%isCard(C) returns true if the card C exists.
 isCard(C) :- characters(L),
              contains(C, L).
 isCard(C) :- weapons(L),
@@ -166,6 +176,31 @@ prop(p4, has, colonel_mustard).
 
 %NOUNS
 
+%'I' is a noun, it is the value of me.
+noun([i | T],T,Name,C,C) :- me(Name).
+
+%'move' or 'question' both refer to the result of nextQuestion.
+noun([move | T],T,(Type,Move),C,C) :- 
+    nextQuestion(Type,Move).
+noun([question | T],T,(Type,Move),C,C) :- 
+    nextQuestion(Type,Move).
+
+%'card(s)' implies the answer is a card.
+noun([cards | T],T,Ind,[isCard(Ind)|C],C).
+noun([card | T],T,Ind,[isCard(Ind)|C],C).
+
+%'character(s)' implies the answer is a character.
+noun([characters | T],T,Ind,[characters(Chars), contains(Ind,Chars)|C],C).
+noun([character | T],T,Ind,[characters(Chars), contains(Ind,Chars)|C],C).
+
+%'weapon(s)' implies the answer is a weapon.
+noun([weapons | T],T,Ind,[weapons(Weapons), contains(Ind,Weapons)|C],C).
+noun([weapon | T],T,Ind,[weapons(Weapons), contains(Ind,Weapons)|C],C).
+
+%'room(s)' implies the answer is a room.
+noun([rooms | T],T,Ind,[rooms(Rooms), contains(Ind,Rooms)|C],C).
+noun([room | T],T,Ind,[rooms(Rooms), contains(Ind,Rooms)|C],C).
+
 %A card name is the name of a card, if it exists.
 noun([Card | T],T,Card,C,C) :- isCard(Card).
 
@@ -177,14 +212,7 @@ noun([Card1, Card2 | T],T,Card,C,C) :-
 
 %A noun is a players name.
 noun([Name | T],T,Name,C,C) :- isPlayer(Name).
-%'I' is a noun, it is the value of me.
-noun([i | T],T,Name,C,C) :- me(Name).
 
-%'move' or 'question' both refer to the result of nextQuestion.
-noun([move | T],T,(Type,Move),C,C) :- 
-    nextQuestion(Type,Move).
-noun([question | T],T,(Type,Move),C,C) :- 
-    nextQuestion(Type,Move).
 
 %ADJECTIVES
 
