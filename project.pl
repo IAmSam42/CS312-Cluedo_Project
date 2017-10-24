@@ -155,12 +155,12 @@ contains(E, [_|T]) :- contains(E, T).
 %% Knowledge Base %%
 
 % The player represented by the program.
-me(p1).
+me(john).
 % The current room.
 current_room(library).
 
 % List of all the players.
-players([p1, p2, bob, p4]).
+players([john, katie, nic, sam, susan]).
 
 % List of all the characters
 characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacock, professor_plum]).
@@ -172,10 +172,13 @@ weapons([candlestick, dagger, lead_pipe, revolver, rope, spanner]).
 rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lounge, hall, study]).
 
 %prop(player, has, card) means that 'player' has 'card' in their hand
-prop(p1, has, lead_pipe).
-prop(p1, has, dagger).
-prop(p1, has, ballroom).
-prop(p4, has, colonel_mustard).
+prop(john, has, lead_pipe).
+prop(john, has, dagger).
+prop(john, has, ballroom).
+prop(susan, has, colonel_mustard).
+prop(katie, has, mrs_scarlett).
+prop(katie, has, hall).
+prop(sam, has, rope).
 
 %%Dictionary
 
