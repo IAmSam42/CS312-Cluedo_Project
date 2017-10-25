@@ -8,20 +8,6 @@
 ?- rooms(R).
 
 
-	which player has the lead pipe/dagger
-	EXPECTED = p1
-?- prop(P, has, lead_pipe).
-?- prop(P, has, dagger).
-	
-
-	all cards that p1 has
-	EXPECTED = 
-	C = lead_pipe 
-	C = dagger 
-	C = ballroom.
-?- prop(p1, has, C).
-
-
 	isCard? 
 	EXPECTED =
 		mrs_white,candlestick,study = true
@@ -34,8 +20,9 @@
 
 	add card to local database (add mrs_white to p2)
 	check if p2 has mrs_white
+	EXPECTED = p2
 ?- add(p2,mrs_white).
-?- prop(P,has,mrs_white).
+?- ask("who has mrs white",A).
 
 
 	A is a list of triples of all possible solutions
@@ -70,7 +57,7 @@
 ********** Natural Language Interface Tests **********
 
 
-	only a noun phrase 
+	only a noun phrase (valid card?)
 	EXPECTED = true
 ?- ask("the dagger",A).
 	EXPECTED = false.
@@ -129,8 +116,11 @@
 
 	Suspected characters/weapons/rooms (things not known in knowledge base)
 	EXPECTED = \+ Col Mustard
+?- add(p2,colonel_mustard).
 ?- ask("what are the suspected characters",A).
 	EXPECTED = \+ lead_pipe,dagger
+?- add(p1,lead_pipe).
+?- add(p1,dagger).
 ?- ask("what are the suspected weapons",A).
 	EXPECTED = \+ current_room()
 ?- ask("what are the suspected rooms",A).
@@ -143,6 +133,9 @@
 
 	"what cards does x have"
 	EXPECTED = lead_pipe, dagger, ballroom
+?- add(p1,lead_pipe).
+?- add(p1,dagger).
+?- add(p1,ballroom).
 ?- ask("what cards does p1 have",A).
 	Adding to knowledge base
 	EXPECTED = lead_pipe, dagger, ballroom, candlestick, study
