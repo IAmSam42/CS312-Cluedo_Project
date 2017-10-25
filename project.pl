@@ -256,3 +256,8 @@ adj([next | T],T,_,C,C).
 %'suspect(ed)' constrains the individual to be a suspect.
 adj([suspect | T],T,Ind,[suspected(Ind) | C],C).
 adj([suspected | T],T,Ind,[suspected(Ind) | C],C).
+
+%Test Lists
+% characters([mrs_scarlett]).
+% weapons([candlestick, dagger]).
+% rooms([library, study]).
