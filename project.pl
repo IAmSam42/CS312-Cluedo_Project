@@ -2,6 +2,10 @@
 
 %%Natural Language Interface
 
+
+%A statement may just be a noun_phrase.
+statement(T0,T1,Ind,C0,C1) :-
+    noun_phrase(T0,T1,Ind,C0,C1).
 %A who has question needs to be identified as a query, so that it does not trigger an assignment.
 statement([who, has | T0],T1,Ind,C0,C1) :-
     mp([query_has|T0],T1,Ind,C0,C1).
@@ -15,9 +19,11 @@ statement([which | T0],T1,Ind,C0,C1) :- %Ignore any 'which'
     noun_phrase(T0,T1,Ind,C0,C1).
 statement([which, is | T0],T1,Ind,C0,C1) :- %Ignore any 'which is'
     noun_phrase(T0,T1,Ind,C0,C1).
-%A statment may just be a noun_phrase.
-statement(T0,T1,Ind,C0,C1) :-
-    noun_phrase(T0,T1,Ind,C0,C1).
+statement([i,am | T0],T1,Ind,C0,C1) :- % I am case
+    mp(T0,T1,Ind,C0,C1).
+statement([im | T0],T1,Ind,C0,C1) :- % Im case 
+    mp(T0,T1,Ind,C0,C1).
+
 
 %noun_phrase(T0, T2, Ind, C0, C2) is true if:
 %   the difference list between T0 and T2 is a noun phrase,
@@ -55,6 +61,7 @@ reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
 reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
 reln([does|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
 reln([do|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
+reln([in|T0],T0,O1,O2,[roomchange(O2)|C],C).
 
 %reln([suspected,rooms|T0],T0,O1,O2,[rooms(O2), suspects(O2,A)|C],C)
 
@@ -136,6 +143,11 @@ add(P, C) :- isCard(C),
              \+ prop(_,has,C),
              assertz(prop(P, has, C)).
 
+%returns true if card C exists and changes current_room to C
+roomchange(C) :- isCard(C), 
+                 retract(current_room(R)),
+                 assertz(current_room(C)).
+
 %isCard(C) returns true if the card C exists.
 isCard(C) :- characters(L),
              contains(C, L).
@@ -157,19 +169,27 @@ contains(E, [_|T]) :- contains(E, T).
 % The player represented by the program.
 me(p1).
 % The current room.
+:- dynamic current_room/1. % to modify the room during runtime
 current_room(library).
 
 % List of all the players.
-players([p1, p2, bob, p4]).
+players([p1, p2, p3, p4]).
 
 % List of all the characters
 characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacock, professor_plum]).
+% List of characters duplicate for testing 
+%characters([mrs_scarlett]).
 
 % List of all the weapons
 weapons([candlestick, dagger, lead_pipe, revolver, rope, spanner]).
+% List of weapons duplicate for testing
+%weapons([candlestick, dagger]).
+
 
 % List of all the rooms
 rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lounge, hall, study]).
+% List of rooms duplicate for testing
+%rooms([library, study]).
 
 %prop(player, has, card) means that 'player' has 'card' in their hand
 prop(p1, has, lead_pipe).
