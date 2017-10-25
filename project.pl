@@ -1,11 +1,40 @@
 %%  Cluedo Project  %%
 
+%%Knowledge Base
+%Some user configuration required.
+
+%Users should set the following:
+
+% List of all the players.
+% Set this to be list of all the players names. Do not include any spaces in names! single words only.
+players([p1, p2, p3, p4]).
+
+% The player represented by the program.
+% Set this to be your name, as you gave it in the above 'players' list.
+me(p1).
+
+% The current room. This can be initialised to anything, as the player can change it at any time.
+% WARNING: If you are playing a version of Cluedo without a library then set this to be any room on the board. Remember to not use spaces!
+:- dynamic current_room/1. % to modify the room during runtime
+current_room(library).
+
+% List of all the characters.
+% WARNING: If you are playing a none standard version of Cluedo, replace these names with the ones written on the cards.
+characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacock, professor_plum]).
+
+% List of all the weapons.
+% WARNING: If you are playing a none standard version of Cluedo, replace these names with the ones written on the cards.
+weapons([candlestick, dagger, lead_pipe, revolver, rope, spanner]).
+
+
+% List of all the rooms.
+% WARNING: If you are playing a none standard version of Cluedo, replace these names with the ones written on the cards.
+rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lounge, hall, study]).
+
+
 %%Natural Language Interface
 
 
-%A statement may just be a noun_phrase.
-statement(T0,T1,Ind,C0,C1) :-
-    noun_phrase(T0,T1,Ind,C0,C1).
 %A who has question needs to be identified as a query, so that it does not trigger an assignment.
 statement([who, has | T0],T1,Ind,C0,C1) :-
     mp([query_has|T0],T1,Ind,C0,C1).
@@ -23,7 +52,9 @@ statement([i,am | T0],T1,Ind,C0,C1) :- % I am case
     mp(T0,T1,Ind,C0,C1).
 statement([im | T0],T1,Ind,C0,C1) :- % Im case 
     mp(T0,T1,Ind,C0,C1).
-
+%A statement may just be a noun_phrase.
+statement(T0,T1,Ind,C0,C1) :-
+    noun_phrase(T0,T1,Ind,C0,C1).
 
 %noun_phrase(T0, T2, Ind, C0, C2) is true if:
 %   the difference list between T0 and T2 is a noun phrase,
@@ -56,33 +87,34 @@ mp(T0,T2,O1,C0,C2) :-    %does/do have relationships
     reln(T0,T1,O1,O2,C0,C1),
     noun_phrase(T1,[have|T2],O2,C1,C2).
 
-reln([query_has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C).
-reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C).
-reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).
-reln([does|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
-reln([do|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).
-reln([in|T0],T0,_,O2,[roomchange(O2)|C],C).
+%A relation is between two objects, here labelled O1 and O2. 01 has been previously defined, and 01 is defined in the modifying phrase that called it.
+reln([query_has|T0],T0,O1,O2,[prop(O1,has,O2)|C],C). %This is a special case of a 'has' relationship, where we want to lookup a relation as opposed to making a new one.
+reln([has|T0],T0,O1,O2,[add(O1,O2)|C],C). %O1 'has' O2 means prop(O1,has,02).
+reln([have|T0],T0,O1,O2,[add(O1,O2)|C],C).%'have' can be treated the same as 'has'.
+reln([does|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).%'does' is another lookup case. 
+reln([do|T0],T0,O1,O2,[prop(O2,has,O1)|C],C).%'do' can be treated the same as 'does'
+reln([in|T0],T0,O1,O2,[me(O1),roomChange(O2)|C],C).%'in' means we need to change the current_room(R) relation ship, but only if we are talking about the user.
 
 %reln([suspected,rooms|T0],T0,O1,O2,[rooms(O2), suspects(O2,A)|C],C)
 
 %ask(Q, A) is true if A is the answer to the question A.
 %Q is given as a string, which is then converted to a list of lower case atoms.
 ask(Q,A) :-
-    string_lower(Q, QLowerCase),
-    tokenize_atom(QLowerCase, QList),
+    string_lower(Q, QLowerCase),        %prebuilt function: turns a string into all lowercase characters.
+    tokenize_atom(QLowerCase, QList),   %prebuild function: turns a string into a list of ' ' seperated atoms.
     statement(QList,[],A,C,[]),
     prove_all(C).
 %A question may also end in a question mark.
 ask(Q,A) :-
-    string_lower(Q, QLowerCase),
-    tokenize_atom(QLowerCase, QList),
+    string_lower(Q, QLowerCase),        %prebuild function: turns a string into all lowercase characters.
+    tokenize_atom(QLowerCase, QList),   %prebuild function: turns a string into a list of ' ' seperated atoms.
     statement(QList,[?],A,C,[]),
     prove_all(C).
 
-% prove_all(L) proves all elements of L against the database
+% prove_all(L) proves all elements of L against the database.
 prove_all([]).
 prove_all([H|T]) :-
-    call(H),      % built-in Prolog predicate calls an atom
+    call(H),      % built-in function calls an atom.
     prove_all(T).
 
 %%Notebook Functionality
@@ -143,8 +175,8 @@ add(P, C) :- isCard(C),
              \+ prop(_,has,C),
              assertz(prop(P, has, C)).
 
-%returns true if card C exists and changes current_room to C
-roomchange(C) :- isCard(C), 
+%roomchange(C) returns true if card C exists and changes current_room to C
+roomChange(C) :- isCard(C), 
                  retract(current_room(_)),
                  assertz(current_room(C)).
 
@@ -166,31 +198,6 @@ contains(E, [_|T]) :- contains(E, T).
 
 %% Knowledge Base %%
 
-% The player represented by the program.
-me(p1).
-% The current room.
-:- dynamic current_room/1. % to modify the room during runtime
-current_room(library).
-
-% List of all the players.
-players([p1, p2, p3, p4]).
-
-% List of all the characters
-characters([mrs_scarlett, colonel_mustard, mrs_white, reverend_green, mrs_peacock, professor_plum]).
-% List of characters duplicate for testing 
-%characters([mrs_scarlett]).
-
-% List of all the weapons
-weapons([candlestick, dagger, lead_pipe, revolver, rope, spanner]).
-% List of weapons duplicate for testing
-%weapons([candlestick, dagger]).
-
-
-% List of all the rooms
-rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lounge, hall, study]).
-% List of rooms duplicate for testing
-%rooms([library, study]).
-
 %prop(player, has, card) means that 'player' has 'card' in their hand
 prop(p1, has, lead_pipe).
 prop(p1, has, dagger).
@@ -204,7 +211,7 @@ prop(p4, has, rope).
 
 %NOUNS
 
-%'I' is a noun, it is the value of me.
+%'I' is a noun, it means the individual is the user.
 noun([i | T],T,Name,C,C) :- me(Name).
 
 %'move' or 'question' both refer to the result of nextQuestion.
@@ -233,7 +240,7 @@ noun([rooms | T],T,Ind,C,C) :- rooms(L),
 noun([room | T],T,Ind,C,C) :-  rooms(L), 
                                contains(Ind,L).
 
-%A card name is the name of a card, if it exists.
+%A card name is a noun, if the card exists.
 noun([Card | T],T,Card,C,C) :- isCard(Card).
 
 %Some cards are formed of two words seperated by a '_'. e.g. mrs_scarlett.
@@ -242,7 +249,7 @@ noun([Card1, Card2 | T],T,Card,C,C) :-
     atom_concat(R1, Card2, Card),
     isCard(Card).
 
-%A noun is a players name.
+%A players name is a noun.
 noun([Name | T],T,Name,C,C) :- isPlayer(Name).
 
 
