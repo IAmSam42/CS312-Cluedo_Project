@@ -35,13 +35,7 @@ rooms([kitchen, ballroom, conservatory, dining_room, billiard_room, library, lou
 
 %prop(player, has, card) means that 'player' has 'card' in their hand.
 % You can manually add these if you want, they will appear in the database when you start the program.
-prop(p1, has, lead_pipe).
-prop(p1, has, dagger).
-prop(p1, has, ballroom).
-prop(p2, has, colonel_mustard).
-prop(p3, has, mrs_scarlett).
-prop(p3, has, hall).
-prop(p4, has, rope).
+:- dynamic prop/3.
 
 %%Natural Language Interface
 
