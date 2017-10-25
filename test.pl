@@ -121,6 +121,12 @@
 ?- ask("what is my next move",A).
 
 
+	Move suggestion using shortened noun form "question/move"
+	EXPECTED = a triple fron the current room
+?- ask(question,A).
+?- ask(move,A).
+
+
 	Suspected characters/weapons/rooms (things not known in knowledge base)
 	EXPECTED = \+ Col Mustard
 ?- ask("what are the suspected characters",A).
@@ -143,6 +149,39 @@
 ?- ask("p1 has the candlestick",A).
 ?- ask("I have the study",A).
 ?- ask("what cards does p1 have",A).
+
+
+	***NOUNS***
+
+
+	"i" 	*must be lowercase i
+	EXPECTED = me = p1
+-? ask(i,A).
+
+
+	"cards/card"
+	EXPECTED = all cards from chars,weapons,rooms
+-? ask(cards,A).
+-? ask(card,A).
+
+
+	"characters/character"
+	EXPECTED = all character cards
+-? ask(characters,A).
+-? ask(character,A).
+
+
+	"weapons/weapon"
+	EXPECTED = all weapon cards
+-? ask(weapons,A).
+-? ask(weapon,A).
+
+
+	"rooms/room"
+	EXPECTED = all room cards 
+-? ask(rooms,A).
+-? ask(room,A).
+
 
 
 */
